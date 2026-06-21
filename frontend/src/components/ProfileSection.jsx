@@ -10,10 +10,11 @@ function getInitials(name, email) {
   return email ? email[0].toUpperCase() : '?'
 }
 
-export default function ProfileSection({ remainingDays }) {
+export default function ProfileSection({ remainingDays, hasActiveSub }) {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(null)
+  const [activeMsg, setActiveMsg] = useState('')
   const menuRef = useRef(null)
 
   useEffect(() => {
@@ -30,16 +31,16 @@ export default function ProfileSection({ remainingDays }) {
 
   const initials = getInitials(user?.name, user?.email)
 
-  async function handlePlan(planId) {
-    setLoading(planId)
-    try {
-      const res = await client.post('/payments/initialize', { plan: planId })
-      window.location.href = res.data.authorization_url
-    } catch {
-      setLoading(null)
-    } finally {
-      setOpen(false)
+  function handlePlan(planId) {
+    if (hasActiveSub) {
+      setActiveMsg('You already have an active subscription')
+      setTimeout(() => setActiveMsg(''), 3000)
+      return
     }
+    setLoading(planId)
+    client.post('/payments/initialize', { plan: planId })
+      .then((res) => { window.location.href = res.data.authorization_url })
+      .catch(() => setLoading(null))
   }
 
   return (
@@ -69,6 +70,12 @@ export default function ProfileSection({ remainingDays }) {
               <span className="text-sm text-gray-700 tabular-nums">
                 {remainingDays} day{remainingDays !== 1 ? 's' : ''} left
               </span>
+            </div>
+          )}
+
+          {activeMsg && (
+            <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 text-sm text-amber-700">
+              {activeMsg}
             </div>
           )}
 

@@ -149,7 +149,8 @@ export default function Dashboard() {
     return () => clearInterval(poll)
   }, [awaitingPayment, paymentRef])
 
-  const showModal = subLoaded && !awaitingPayment && (!sub || sub.remaining_seconds <= 0)
+  const expired = remainingDays !== null && remainingDays <= 0
+  const showModal = subLoaded && !awaitingPayment && (!sub || sub.remaining_seconds <= 0 || expired)
 
   return (
     <div className={`min-h-screen bg-gray-50 ${showModal ? 'overflow-hidden h-screen' : ''}`}>
@@ -158,7 +159,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold text-gray-800 tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>GIGO</h1>
           </div>
-          <ProfileSection remainingDays={remainingDays} />
+          <ProfileSection remainingDays={remainingDays} hasActiveSub={remainingDays !== null && remainingDays > 0} />
         </div>
       </header>
 
