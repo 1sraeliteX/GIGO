@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './hooks/useAuth'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './components/LoginPage'
-import Dashboard from './components/Dashboard'
+import TasksPage from './components/TasksPage'
 
 export default function App() {
   return (
@@ -14,7 +14,7 @@ export default function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <TasksPage />
               </ProtectedRoute>
             }
           />
