@@ -39,6 +39,10 @@ function getDB(): PDO
 function runMigrations(): void
 {
     $db = getDB();
-    $sql = file_get_contents(__DIR__ . '/migrations/001_create_tables.sql');
-    $db->exec($sql);
+    $files = glob(__DIR__ . '/migrations/[0-9]*_*.sql');
+    sort($files);
+    foreach ($files as $file) {
+        $sql = file_get_contents($file);
+        $db->exec($sql);
+    }
 }

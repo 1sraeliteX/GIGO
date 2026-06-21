@@ -45,3 +45,9 @@ define('SMTP_USER', env('SMTP_USER', ''));
 define('SMTP_PASS', env('SMTP_PASS', ''));
 define('SMTP_FROM', env('SMTP_FROM', 'noreply@gigo.app'));
 define('SMTP_FROM_NAME', env('SMTP_FROM_NAME', 'GIGO'));
+
+define('PAYSTACK_SECRET_KEY', env('PAYSTACK_SECRET_KEY', ''));
+define('PAYSTACK_PUBLIC_KEY', env('PAYSTACK_PUBLIC_KEY', ''));
+
+define('SUBSCRIPTION_1_WEEK_PRICE', 1000000);
+define('SUBSCRIPTION_1_MONTH_PRICE', 6000000);

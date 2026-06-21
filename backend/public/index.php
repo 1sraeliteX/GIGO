@@ -23,6 +23,7 @@ $uri = rtrim($uri, '/');
 require_once __DIR__ . '/../src/controllers/AuthController.php';
 require_once __DIR__ . '/../src/controllers/UserController.php';
 require_once __DIR__ . '/../src/controllers/TaskController.php';
+require_once __DIR__ . '/../src/controllers/SubscriptionController.php';
 
 // Routes
 if ($uri === '/api/auth/send-code' && $method === 'POST') {
@@ -35,6 +36,14 @@ if ($uri === '/api/auth/send-code' && $method === 'POST') {
     handleUpdateProfile();
 } elseif ($uri === '/api/tasks' && $method === 'GET') {
     handleGetTasks();
+} elseif ($uri === '/api/payments/initialize' && $method === 'POST') {
+    handleInitializePayment();
+} elseif ($uri === '/api/payments/verify' && $method === 'POST') {
+    handleVerifyPayment();
+} elseif ($uri === '/api/subscription/current' && $method === 'GET') {
+    handleCurrentSubscription();
+} elseif ($uri === '/api/webhooks/paystack' && $method === 'POST') {
+    handlePaystackWebhook();
 } else {
     errorResponse('Not Found', 404);
 }

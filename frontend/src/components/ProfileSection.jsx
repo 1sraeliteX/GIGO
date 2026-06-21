@@ -1,79 +1,104 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import client from '../api/client'
 
-export default function ProfileSection() {
-  const { user, updateUser, logout } = useAuth()
-  const [editing, setEditing] = useState(false)
-  const [name, setName] = useState(user?.name || '')
-  const [saving, setSaving] = useState(false)
+function getInitials(name, email) {
+  if (name) {
+    const parts = name.trim().split(/\s+/)
+    return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase()
+  }
+  return email ? email[0].toUpperCase() : '?'
+}
 
-  const handleSave = async () => {
-    if (!name.trim()) return
-    setSaving(true)
+export default function ProfileSection({ remainingDays }) {
+  const { user, logout } = useAuth()
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(null)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClick)
+    }
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  const initials = getInitials(user?.name, user?.email)
+
+  async function handlePlan(planId) {
+    setLoading(planId)
     try {
-      const res = await client.put('/user/profile', { name })
-      updateUser(res.data.user)
-      setEditing(false)
+      const res = await client.post('/payments/initialize', { plan: planId })
+      window.location.href = res.data.authorization_url
     } catch {
-      // ignore
+      setLoading(null)
     } finally {
-      setSaving(false)
+      setOpen(false)
     }
   }
 
-  const handleCancel = () => {
-    setName(user?.name || '')
-    setEditing(false)
-  }
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSave()
-    if (e.key === 'Escape') handleCancel()
-  }
-
   return (
-    <div className="flex items-center gap-4">
-      {editing ? (
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <button
-            onClick={handleSave}
-            disabled={saving || !name.trim()}
-            className="text-sm text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
-          >
-            {saving ? '...' : 'Save'}
-          </button>
-          <button
-            onClick={handleCancel}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Cancel
-          </button>
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5"
+      >
+        <div className="w-9 h-9 rounded-full bg-indigo-600 text-white text-sm font-semibold flex items-center justify-center hover:bg-indigo-700 transition shrink-0">
+          {initials}
         </div>
-      ) : (
-        <>
-          <button
-            onClick={() => setEditing(true)}
-            className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition cursor-pointer"
-            title="Click to edit name"
-          >
-            {user?.name || 'User'}
-          </button>
-          <button
-            onClick={logout}
-            className="text-sm text-red-500 hover:text-red-700 transition"
-          >
-            Logout
-          </button>
-        </>
+        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-11 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+          <div className="px-4 py-2 border-b border-gray-100">
+            <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'User'}</p>
+            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+          </div>
+
+          {remainingDays !== null && (
+            <div className="px-4 py-2 border-b border-gray-100 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-sm text-gray-700 tabular-nums">
+                {remainingDays} day{remainingDays !== 1 ? 's' : ''} left
+              </span>
+            </div>
+          )}
+
+          <div className="py-1">
+            <p className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Subscription</p>
+            <button
+              onClick={() => handlePlan('1_week')}
+              disabled={loading !== null}
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+            >
+              {loading === '1_week' ? 'Redirecting...' : '1 Week Plan — ₦10,000'}
+            </button>
+            <button
+              onClick={() => handlePlan('1_month')}
+              disabled={loading !== null}
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+            >
+              {loading === '1_month' ? 'Redirecting...' : '1 Month Plan — ₦60,000'}
+            </button>
+          </div>
+
+          <div className="border-t border-gray-100 pt-1">
+            <button
+              onClick={logout}
+              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
