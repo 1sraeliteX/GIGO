@@ -98,7 +98,7 @@ export default function LoginPage() {
               required
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="000000"
+              placeholder="--- ---"
               maxLength={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 text-center text-2xl tracking-[8px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
